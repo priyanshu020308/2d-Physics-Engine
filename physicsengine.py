@@ -8,8 +8,8 @@ import random as r
 py.init()
 lst = [] # to check if the mouse press works, we will append the balls coordinates and whenever I press the mouse button, and print it in the  end.
 #update: mouse click works, and position check works, will remove it shortly
-width = 800
-height = 600
+width = 1500
+height = 1000
 
 #initialise screen
 screen = py.display.set_mode((width, height))
@@ -64,7 +64,11 @@ while running:
             clock.tick(120) # keeps the time spent dragging out of delta_time. Basically pauses the ball temporarily.
 
         dx, dy = final_x - x, final_y - y # moved inside the if, so it runs once per release
-        if dx != 0 and dy != 0:
+        if dx != 0 or dy != 0:
+            if (y == floor and dy < 0) or (y == ceiling and dy > 0):
+                dy = 0
+            if (x == right_wall and dx < 0) or (x == left_wall and dx > 0):
+                dx = 0
             vel_y = -dy*10 
             vel_x = -dx*10
 
@@ -93,8 +97,8 @@ while running:
             x = left_wall # snap back so the object never goes above the ceiling
         vel_x = -vel_x * restitution # reverse direction and lose some energy
 
-        if abs(vel_y) < rest_threshold: # stop tiny endless micro-bounces
-            vel_y = 0.0
+        if abs(vel_x) < rest_threshold: # stop tiny endless micro-bounces
+            vel_x = 0.0
     screen.fill((0, 0, 0))
 
     #using pygame.draw to draw a physics shape (a rigid body)
