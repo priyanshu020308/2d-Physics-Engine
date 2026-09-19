@@ -19,40 +19,51 @@ clock = py.time.Clock() #initialise clock
 
 # initialise physics vars
 g = 980 # initialise gravity
+restitution = 1.5 # 1 = perfectly elastic, 0 = no bounce at all
+rest_threshold = 15 # below this speed on impact, the ball is considered at rest
 
 #initialise circle vars
-a, b = 400, 0 # initial positions
 radius = 50
+floor = height - radius
+ceiling = 0 + radius
+
+a, b = 400, ceiling # initial positions
 x, y = a, b # will be used to control the objects movement and position
 vel_y = 0.0 # y velocity of the object
 vel_x = 0.0 # x velocity of the object
 
 #set boundaries
-floor = height - radius
-ceiling = 0 + radius
+
 
 running = True # initialise loop
 while running:
 
-    delta_time = clock.tick(60) / 1000.0
+    delta_time = clock.tick(120) / 1000.0
 
     #get all the events, such as key press, quit, etc.
     for event in py.event.get():
         if event.type == py.QUIT:
             running = False
 
+    #adding gravity
+    vel_y += g * delta_time
+    y += vel_y * delta_time
+
+    #floor collision and rebound
+    if y >= floor or y <= ceiling:
+        if y >= floor:
+            y = floor # snap back so the object never sinks below the floor
+        elif y <= ceiling:
+            y = ceiling # snap back so the object never goes above the ceiling
+        vel_y = -vel_y * restitution # reverse direction and lose some energy
+
+        if abs(vel_y) < rest_threshold: # stop tiny endless micro-bounces
+            vel_y = 0.0
+
     screen.fill((0, 0, 0))
 
-    #using pygame.draw to draw a physics shape (a rigid body) at random positions
-    py.draw.circle(screen, (255, 255, 255), (x, y), radius)
-
-    #adding gravity
-    if y <= floor:
-        vel_y += g*delta_time
-        y += vel_y*delta_time
-    else:
-        y = floor # to make sure that if the object goes below the floor,it gets snapped back to the floor 
-        vel_y = 0 # since the object is snapped back to floor, y = 550 now, but vel_y != 0, so in the next loop, the if statement runs again. To ensure that the ball doesnt glitch out, we set vel_y = 0
+    #using pygame.draw to draw a physics shape (a rigid body)
+    py.draw.circle(screen, (255, 255, 255), (int(x), int(y)), radius)
 
     py.display.flip()
 
