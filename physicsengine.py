@@ -73,12 +73,7 @@ while running:
             vel_y = -dy*10 
             vel_x = -dx*10
 
-    #adding horizontal movement
-    if vel_x != 0 and y == floor or y == ceiling:
-        vel_x -= vel_x*friction
-    x += vel_x * delta_time
 
-    vel_x 
     #adding gravity
     vel_y += g * delta_time # constantly pull object towards the floor
     y += vel_y * delta_time
@@ -104,6 +99,11 @@ while running:
         if abs(vel_x) < rest_threshold: # stop tiny endless micro-bounces
             vel_x = 0.0
     screen.fill((0, 0, 0))
+
+    #adding horizontal movement and friction
+    if vel_x != 0 and (y == floor or y == ceiling):
+        vel_x -= vel_x*friction
+    x += vel_x * delta_time
 
     #using pygame.draw to draw a physics shape (a rigid body)
     py.draw.circle(screen, (255, 255, 255), (int(x), int(y)), radius)
