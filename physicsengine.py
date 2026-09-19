@@ -22,6 +22,7 @@ clock = py.time.Clock() #initialise clock
 g = 980 # initialise gravity
 restitution = 0.9 # 1 = perfectly elastic, 0 = no bounce at all
 rest_threshold = 15 # below this speed on impact, the ball is considered at rest
+friction = 0.01
 
 #initialise circle vars
 radius = 50
@@ -73,8 +74,11 @@ while running:
             vel_x = -dx*10
 
     #adding horizontal movement
+    if vel_x != 0 and y == floor or y == ceiling:
+        vel_x -= vel_x*friction
     x += vel_x * delta_time
 
+    vel_x 
     #adding gravity
     vel_y += g * delta_time # constantly pull object towards the floor
     y += vel_y * delta_time
@@ -92,9 +96,9 @@ while running:
     #wall collision and rebound
     if x >= right_wall or x <= left_wall:
         if x >= right_wall:
-            x = right_wall # snap back so the object never sinks below the floor
+            x = right_wall # snap back so the object never goes beyond the right wall
         elif x <= left_wall:
-            x = left_wall # snap back so the object never goes above the ceiling
+            x = left_wall # snap back so the object never goes beyond the left wall
         vel_x = -vel_x * restitution # reverse direction and lose some energy
 
         if abs(vel_x) < rest_threshold: # stop tiny endless micro-bounces
