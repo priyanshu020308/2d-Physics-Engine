@@ -24,10 +24,10 @@ At the moment the engine simulates a single ball that you can grab, pull back, a
 
 ```bash
 pip install pygame
-python main.py
+python physicsengine.py
 ```
 
-Replace `main.py` with whatever your file is called. Close the window to quit.
+Close the window to quit.
 
 ### Controls
 
