@@ -12,22 +12,23 @@ At the moment the engine simulates a single ball that you can grab, pull back, a
 - **Friction:** horizontal speed gradually drops while the ball is in contact with the floor or ceiling.
 - **Drag-and-throw:** click and hold on the ball, drag the mouse, and release to launch it. The ball flies in the opposite direction of your drag, like a slingshot, and a longer drag means a faster throw.
 - **Frame-rate independent movement:** motion is scaled by `delta_time`, so the simulation speed does not depend on how fast the computer runs.
+- **Object-oriented structure:** physics lives in a `PhysicsObject` class, and mouse dragging is added by a `DraggableObject` subclass, so new kinds of objects can be built on the same base.
 
 ## Getting Started
 
 ### Requirements
 
-- Python 3.8 or newer
-- PyGame
+- Python 3 (developed on Python 3.14)
+- PyGame (developed with `pygame-ce`)
 
 ### Install and run
 
 ```bash
-pip install pygame
+pip install pygame-ce
 python physicsengine.py
 ```
 
-Close the window to quit.
+The original `pygame` package also works on Python versions it supports (`pip install pygame`). Keep all the `.py` files in the same folder and run only `physicsengine.py`. Close the window to quit.
 
 ### Controls
 
@@ -43,7 +44,7 @@ This section explains the ideas behind the code, since understanding them is the
 
 ### The game loop
 
-Everything runs inside one `while` loop. Each pass of the loop is one frame: read input, update the physics, then draw the result. The loop is capped at 120 frames per second with `clock.tick(120)`.
+Everything runs inside one `while` loop in `physicsengine.py`. Each pass of the loop is one frame: read input, update the physics, then draw the result. The loop is capped at 120 frames per second with `clock.tick(fps)`.
 
 ### Delta time
 
@@ -51,11 +52,11 @@ Everything runs inside one `while` loop. Each pass of the loop is one frame: rea
 
 ### Integrating motion
 
-Each frame follows the same two steps:
+Each frame follows the same two steps inside `PhysicsObject.update`:
 
 ```python
-vel_y += g * delta_time    # acceleration changes velocity
-y += vel_y * delta_time    # velocity changes position
+self.vel_y += g * delta_time    # acceleration changes velocity
+self.y += self.vel_y * delta_time    # velocity changes position
 ```
 
 Velocity is updated first and the new velocity is then used to move the object. This approach is known as semi-implicit (or symplectic) Euler integration. It is simple and stays stable for this kind of simulation.
@@ -65,7 +66,7 @@ Velocity is updated first and the new velocity is then used to move the object. 
 When the ball reaches a boundary, its position is snapped back inside the window so it never sinks through the floor or walls. Then its velocity on that axis is flipped and multiplied by `restitution`:
 
 ```python
-vel_y = -vel_y * restitution
+self.vel_y = -self.vel_y * restitution
 ```
 
 A restitution of `1` is a perfectly elastic bounce and `0` means no bounce at all. This project uses `0.7`, so the ball keeps 70% of its speed after each impact.
@@ -75,25 +76,25 @@ A restitution of `1` is a perfectly elastic bounce and `0` means no bounce at al
 While the ball touches the floor or ceiling, a small fraction of its horizontal velocity is removed every frame:
 
 ```python
-vel_x -= vel_x * friction
+self.vel_x -= self.vel_x * friction
 ```
 
 This makes it slow down and eventually stop instead of sliding forever.
 
 ### Dragging and throwing
 
-When the mouse is pressed inside the ball's hitbox, the program enters a small drag loop that redraws the ball and a line to the cursor. While this loop runs, the normal physics is paused. On release, the difference between the cursor position and the ball position becomes the launch velocity:
+`DraggableObject.handle_drag` checks whether the mouse is pressed inside the ball's hitbox. If it is, the program enters a small drag loop that redraws the ball and a line to the cursor. While this loop runs, the normal physics is paused. On release, the difference between the cursor position and the ball position becomes the launch velocity:
 
 ```python
-vel_x = -dx * 10
-vel_y = -dy * 10
+self.vel_x = -dx * 10
+self.vel_y = -dy * 10
 ```
 
 The negative sign sends the ball the opposite way from the drag, and the multiplier of `10` sets how strong the throw feels.
 
 ## Adjustable Settings
 
-These variables at the top of the file are worth experimenting with to see how each one changes the behaviour:
+These variables in `settings.py` are worth experimenting with to see how each one changes the behaviour:
 
 | Variable | Default | What it does |
 | --- | --- | --- |
@@ -101,8 +102,10 @@ These variables at the top of the file are worth experimenting with to see how e
 | `restitution` | `0.7` | Bounciness, from 0 (no bounce) to 1 (perfectly elastic) |
 | `rest_threshold` | `15` | Impact speed below which the ball stops bouncing |
 | `friction` | `0.01` | Fraction of horizontal speed lost per frame on a surface |
-| `radius` | `50` | Size of the ball in pixels |
 | `width`, `height` | `1500`, `1000` | Size of the window |
+| `fps` | `120` | Frame rate cap of the main loop |
+
+The size of the ball is set by `self.radius` (default `50`) in `PhysicsObject`.
 
 ## Known Limitations
 
@@ -110,6 +113,7 @@ Being honest about what is not finished is part of learning, so here is what I a
 
 - The mouse hitbox is a square around the ball rather than a true circle, so clicking in the corners of that square still grabs it.
 - Friction is applied once per frame, which means it is slightly dependent on the frame rate. Scaling it by `delta_time` would fix that.
+- Dragging uses a blocking loop that redraws only the dragged object, so other objects would freeze and disappear while you drag one. It needs to become a non-blocking drag state before a second object is added.
 - Only one object exists, so there are no collisions between objects yet.
 
 ## Roadmap
@@ -117,17 +121,20 @@ Being honest about what is not finished is part of learning, so here is what I a
 - [x] Gravity, boundary collisions, and bounce
 - [x] Friction on surfaces
 - [x] Drag-and-throw with the mouse
-- [ ] Refactor into a reusable physics object class, with a draggable subclass
+- [x] Refactor into a reusable physics object class, with a draggable subclass
+- [x] Remove the leftover mouse-position debug list
 - [ ] Give each object its own mass, independent of its size
 - [ ] Add more shapes: rectangles, triangles, and others
 - [ ] Object-to-object collision detection and response
-- [ ] Remove the leftover mouse-position debug list
 
 ## Project Structure
 
 ```
 .
-├── main.py      # the whole engine: setup, game loop, physics, drawing
+├── physicsengine.py    # entry point: window setup and the main game loop
+├── settings.py         # shared constants: window size, gravity, restitution, friction
+├── physicsobject.py    # PhysicsObject: gravity, collisions, friction, drawing
+├── draggableobject.py  # DraggableObject: adds mouse drag-and-throw
 └── README.md
 ```
 
@@ -135,7 +142,7 @@ Being honest about what is not finished is part of learning, so here is what I a
 
 - [Python](https://www.python.org/)
 - [PyGame](https://www.pygame.org/) for the window, input, and drawing
-- The `math` and `random` modules from the standard library
+- The `math` module from the standard library
 
 ## Why I Built This
 
