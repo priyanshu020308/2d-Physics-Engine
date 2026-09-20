@@ -143,4 +143,6 @@ I wanted a hands-on way to learn how physics engines work, so I am building one 
 
 ## License
 
-Add your preferred license here (for example MIT) once you decide.
+MIT License
+
+Copyright (c) 2026 Priyanshu_0203
