@@ -6,8 +6,7 @@ import math as m
 import random as r
 #initialise pygame
 py.init()
-lst = [] # to check if the mouse press works, we will append the balls coordinates and whenever I press the mouse button, and print it in the  end.
-#update: mouse click works, and position check works, will remove it shortly
+
 width = 1500
 height = 1000
 
