@@ -129,8 +129,8 @@ Being honest about what is not finished is part of learning, so here is what I a
 
 ## Versions
 
-- **v1.1.0:** Split the single script into separate files and classes (`PhysicsObject`, `DraggableObject`, `settings.py`). Behaviour is unchanged.
-- **v1.0.0:** First release. A single ball with gravity, bouncing, friction, and drag-and-throw, all in one file.
+- **v0.1.1:** Split the single script into separate files and classes (`PhysicsObject`, `DraggableObject`, `settings.py`). Behaviour is unchanged.
+- **v0.1.0:** First release. A single ball with gravity, bouncing, friction, and drag-and-throw, all in one file.
 
 ## Project Structure
 
